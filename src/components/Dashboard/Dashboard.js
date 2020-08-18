@@ -46,14 +46,12 @@ const Dashboard = () => {
         })
 
         socket.on('UserLeft', ({ id }) => {
-            const remainingUsers = users && users.filter(user => user.id !== id);
-            setUsers(remainingUsers);            
+            setUsers(users => users.filter(user => user.id !== id));
         });
 
         socket.on('UserAdded', ({ name, id }) => {
-            const oldusers = [...users];
-            const updatedusers = [...oldusers, new OtherUser(name, id)]
-            setUsers(updatedusers);            
+            const newUser = new OtherUser(name, id);
+            setUsers(users => users.concat(newUser));
         })
 
         socket.on('newProducer', async (data) => {
