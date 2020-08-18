@@ -3,9 +3,10 @@ import * as mediasoupClient from 'mediasoup-client';
 export class WebRTC {
     device = null;
     
-    constructor(socket, users) {
+    constructor(socket, users, user) {
         this.socket = socket;
         this.users = users;
+        this.selfUser = user
     }
 
     async loadDevice(routerRtpCapabilities) {
@@ -45,6 +46,7 @@ export class WebRTC {
                     break;
         
                 case "connected":
+                    console.log("consume connected")
                     // this.connectToRemoteConsumer(consumerPromise, users, producer, kind);
                     break;
         
@@ -120,6 +122,21 @@ export class WebRTC {
         });
 
         return transport;
+    }
+
+    async createConsumer(userId, kind) {
+        // transport, producerId, kind
+        const transport = this.selfUser.consumeTransport;
+        const { rtpCapabilities } = this.device;
+
+        const data = await this.socket.request("consume", {
+            rtpCapabilities,
+            userId,
+            transportId: transport.id,
+            kind
+        });
+
+        return await transport.consume({ ...data });
     }
 
     async createProducer(track, transport) {
