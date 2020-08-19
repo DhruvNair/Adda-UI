@@ -8,8 +8,7 @@ import { User, OtherUser } from '../../Model/User';
 
 const Dashboard = () => {
     const [users, setUsers] = useState([]);
-    const selfUser = useRef(null);
-    const [userChanged, setUserChanged] = useState(false);
+    const [selfUser, setSelfUser] = useState(null);
     const [socket, setSocket] = useState(null);
     const [webrtc, setWebrtc] = useState(null);
     const result = useParams();
@@ -42,7 +41,7 @@ const Dashboard = () => {
             user.consumeTransport = consumerTransport;
             user.produceTransport = producerTransport;
 
-            selfUser.current = { ...user };
+            setSelfUser(user);
             setWebrtc(_ => webrtc)
 
             const prevusers = await socket.request('getusers', null);
@@ -105,41 +104,56 @@ const Dashboard = () => {
 
     }, [socket]);
 
+    console.log(webrtc, "WWEEEEBBBBB");
 
     const getAudio = async () => {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
         const track = stream.getAudioTracks()[0];
 
-        const producer = await webrtc.createProducer(track, selfUser.current.produceTransport);
+        const producer = await webrtc.createProducer(track, selfUser.produceTransport);
         
-        const updatedUser = { ...selfUser };
-        updatedUser.producer = producer;
-
-        selfUser.current = { ...updatedUser }
-        setUserChanged(prev => !prev);
+        setSelfUser(prev => {
+            const updated = { ...prev }
+            updated.producer = producer;
+            return updated;
+        })
     }
 
     const pauseProducer = async() => {
-        const producer = selfUser.current.producer;
-        if (!producer) throw new Error("Producer not found");
-
+        
         try {
             await socket.request('pauseProducer', { producerUserId: socket.id })
-            producer.pause();
-            setUserChanged(prev => !prev);
+            setSelfUser(prev => {
+                const producer = prev.producer;
+                if (!producer) throw new Error("Producer not found");
+
+                producer.pause();
+
+                const updated = { ...prev };
+                updated.producer = producer;
+
+                return updated;
+            })
         } catch(e) {
             console.log('lul error');
         }
     }
 
     const resumeProducer = async() => {
-        const producer = selfUser.current.producer;
-        if (!producer) throw new Error("Producer not found");
 
         try {
             await socket.request('resumeProducer', { producerUserId: socket.id })
-            producer.resume();
-            setUserChanged(prev => !prev);
+            setSelfUser(prev => {
+                const producer = prev.producer;
+                if (!producer) throw new Error("Producer not found");
+
+                producer.resume();
+
+                const updated = { ...prev };
+                updated.producer = producer;
+
+                return updated;
+            })
         } catch(e) {
             console.log('lul error');
         }
@@ -164,8 +178,8 @@ const Dashboard = () => {
             })} 
             <div>Hi</div>
             <button disabled={!webrtc} onClick={getAudio}>Audio</button>
-            <button disabled={!(selfUser.current && selfUser.current.producer && !selfUser.current.producer.paused)} onClick={pauseProducer}>Pause</button>
-            <button disabled={!(selfUser.current && selfUser.current.producer && selfUser.current.producer.paused)} onClick={resumeProducer}>Resume</button>
+            <button disabled={!(selfUser && selfUser.producer && !selfUser.producer.paused)} onClick={pauseProducer}>Pause</button>
+            <button disabled={!(selfUser && selfUser.producer && selfUser.producer.paused)} onClick={resumeProducer}>Resume</button>
         </>
     );
 }
