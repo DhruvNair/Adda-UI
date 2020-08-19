@@ -5,6 +5,16 @@ import config from '../../config/config';
 import { promise } from '../../utils/socket-promise';
 import { WebRTC } from '../../services/webrtc';
 import { User, OtherUser } from '../../Model/User';
+//Temp name generator
+function makename(length) {
+    var result           = '';
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+       result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+ }
 
 const Dashboard = () => {
     const [users, setUsers] = useState([]);
@@ -18,7 +28,9 @@ const Dashboard = () => {
 
     useEffect(() => {
         // It's hardcoded to brijesh
-        const socket = io(`${config.host}?meetingId=${result.id}&name=brijesh`);
+        const name = makename(5)
+        const socket = io(`${config.host}?meetingId=${result.id}&name=${name}`);
+        console.log(name);
         socket.request = promise(socket);
         setSocket(socket);
     }, []);
