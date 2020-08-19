@@ -7,7 +7,7 @@ import { WebRTC } from '../../services/webrtc';
 import { User, OtherUser } from '../../Model/User';
 
 const Dashboard = () => {
-    const users = useRef([]);
+    const [users, setUsers] = useState([]);
     const selfUser = useRef(null);
     const [userChanged, setUserChanged] = useState(false);
     const [socket, setSocket] = useState(null);
@@ -46,63 +46,62 @@ const Dashboard = () => {
             setWebrtc(_ => webrtc)
 
             const prevusers = await socket.request('getusers', null);
-            users.current = prevusers.map(each => new OtherUser(each.name, each.id));
-            setUserChanged(prev => !prev);
+            const prevUsersNormalized = prevusers.map(each => new OtherUser(each.name, each.id));
+            setUsers(_ => prevUsersNormalized);
         })
 
         socket.on('UserLeft', ({ id }) => {
-            users.current = users.current.filter(user => user.id !== id)
-            setUserChanged(prev => !prev);
+            setUsers(prev => prev.filter(user => user.id !== id))
         })
 
         socket.on('UserAdded', ({ name, id }) => {
             const newUser = new OtherUser(name, id);
-            users.current.push(newUser);
-            setUserChanged(prev => !prev);
+            setUsers(prev => [...prev, newUser]);
         })
 
         socket.on('newProducer', async (data) => {
             const { socketId, kind } = data;
             const consumer = await webrtc.createConsumer(socketId, kind);
     
-            const user = users.current.find(ele => ele.id === socketId);
-            if (!user) throw new Error("User not found");
-            user.consumer = consumer
-    
-    
-            let stream = new MediaStream();
-            stream.addTrack(consumer.track);
+            setUsers(prev => {
+                const otherUsers = prev.filter(each => each.id !== socketId);
+                const user = prev.find(ele => ele.id === socketId);
 
-            user.stream = stream;
-            setUserChanged(prev => !prev);
-            
-            // This works (but not the correct way)
-            document.querySelector('audio').srcObject = user.stream;
+                if (!user) throw new Error("User not found");
+                user.consumer = consumer
+        
+                let stream = new MediaStream();
+                stream.addTrack(consumer.track);
+    
+                user.stream = stream;
+
+                // This works (but not the correct way)
+                document.querySelector('audio').srcObject = user.stream;
+
+                return [otherUsers, user]
+            })
+
 
             await socket.request("resume", { consumerId: consumer.id, socketId, kind });
         })
 
         socket.on('consumerPause', (data) => {
             const { consumerId } = data;
-            const consumerObj = users.current.find(user => user.consumer && user.consumer.id === consumerId);
+            const consumerObj = users.find(user => user.consumer && user.consumer.id === consumerId);
 
             if (!consumerObj) return;
 
-            setUserChanged(prev => !prev);
             consumerObj.pause();
         })
 
         socket.on('consumerResume', (data) => {
             const { consumerId } = data;
-            const consumerObj = users.current.find(user => user.consumer && user.consumer.id === consumerId);
+            const consumerObj = users.find(user => user.consumer && user.consumer.id === consumerId);
 
             if (!consumerObj) return;
 
-            setUserChanged(prev => !prev);
             consumerObj.resume();
         })
-
-        console.log("SHOULD BE CALLED ONLY ONCE");
 
     }, [socket]);
 
@@ -146,11 +145,13 @@ const Dashboard = () => {
         }
     }
 
+    console.log(users);
+
     return (
         <> 
             <audio id="hella" autoPlay={true}></audio>
             <h1>{socket && socket.id}</h1>
-            {users.current && users.current.map(user => {
+            {users && users.map(user => {
                 return (
                     <div key={user.id}>
                         <h2 key={user.id}>{user.name + '    '}{user.id}</h2>
