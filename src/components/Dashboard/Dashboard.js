@@ -6,27 +6,25 @@ import { promise } from '../../utils/socket-promise';
 import { WebRTC } from '../../services/webrtc';
 import { User, OtherUser } from '../../Model/User';
 
+let socket;
+let webrtc;
+
 const Dashboard = () => {
     const [users, setUsers] = useState([]);
     const [selfUser, setSelfUser] = useState(null);
-    const [socket, setSocket] = useState(null);
-    const [webrtc, setWebrtc] = useState(null);
     const result = useParams();
 
     useEffect(() => {
         // It's hardcoded to brijesh
-        const socket = io(`${config.host}?meetingId=${result.id}&name=brijesh`, {
+        socket = io(`${config.host}?meetingId=${result.id}&name=brijesh`, {
             transports: ["websockets", "polling"]
         });
         socket.request = promise(socket);
-        setSocket(socket);
     }, [result]);
 
 
     useEffect(() => {
         if (!socket) return;
-        let webrtc = null;
-        
         socket.on('connect', async () => {
             const user = new User('brijesh', socket.id)
             webrtc = new WebRTC(socket, users, user);
@@ -42,11 +40,10 @@ const Dashboard = () => {
             user.produceTransport = producerTransport;
 
             setSelfUser(user);
-            setWebrtc(_ => webrtc)
 
-            const prevusers = await socket.request('getusers', null);
-            const prevUsersNormalized = prevusers.map(each => new OtherUser(each.name, each.id));
-            setUsers(_ => prevUsersNormalized);
+            const userList = await socket.request('getusers', null);
+            const prevUsers = userList.map(each => new OtherUser(each.name, each.id));
+            setUsers(prevUsers);
         })
 
         socket.on('UserLeft', ({ id }) => {
@@ -77,7 +74,7 @@ const Dashboard = () => {
                 // This works (but not the correct way)
                 document.querySelector('audio').srcObject = user.stream;
 
-                return [otherUsers, user]
+                return [...otherUsers, user]
             })
 
 
