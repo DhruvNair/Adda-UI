@@ -16,7 +16,9 @@ const Dashboard = () => {
 
     useEffect(() => {
         // It's hardcoded to brijesh
-        const socket = io(`${config.host}?meetingId=${result.id}&name=brijesh`);
+        const socket = io(`${config.host}?meetingId=${result.id}&name=brijesh`, {
+            transports: ["websockets", "polling"]
+        });
         socket.request = promise(socket);
         setSocket(socket);
     }, [result]);
@@ -41,7 +43,7 @@ const Dashboard = () => {
             user.produceTransport = producerTransport;
 
             selfUser.current = { ...user };
-            setWebrtc(webrtc)
+            setWebrtc(_ => webrtc)
 
             const prevusers = await socket.request('getusers', null);
             users.current = prevusers.map(each => new OtherUser(each.name, each.id));
@@ -99,6 +101,8 @@ const Dashboard = () => {
             setUserChanged(prev => !prev);
             consumerObj.resume();
         })
+
+        console.log("SHOULD BE CALLED ONLY ONCE");
 
     }, [socket]);
 
