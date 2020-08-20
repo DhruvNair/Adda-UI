@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import io from 'socket.io-client';
 import config from '../../config/config';
@@ -20,11 +20,7 @@ const Dashboard = () => {
             transports: ["websockets", "polling"]
         });
         socket.request = promise(socket);
-    }, [result]);
 
-
-    useEffect(() => {
-        if (!socket) return;
         socket.on('connect', async () => {
             const user = new User('brijesh', socket.id)
             webrtc = new WebRTC(socket, users, user);
@@ -70,14 +66,11 @@ const Dashboard = () => {
                 stream.addTrack(consumer.track);
     
                 user.stream = stream;
-
+                console.log("User: ", socketId, " played :", stream)
                 // This works (but not the correct way)
                 document.querySelector('audio').srcObject = user.stream;
-
                 return [...otherUsers, user]
             })
-
-
             await socket.request("resume", { consumerId: consumer.id, socketId, kind });
         })
 
@@ -98,10 +91,7 @@ const Dashboard = () => {
 
             consumerObj.resume();
         })
-
-    }, [socket]);
-
-    console.log(webrtc, "WWEEEEBBBBB");
+    }, [result]);
 
     const getAudio = async () => {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -137,7 +127,6 @@ const Dashboard = () => {
     }
 
     const resumeProducer = async() => {
-
         try {
             await socket.request('resumeProducer', { producerUserId: socket.id })
             setSelfUser(prev => {
@@ -156,20 +145,16 @@ const Dashboard = () => {
         }
     }
 
-    console.log(users);
-
     return (
         <> 
-            <audio id="hella" autoPlay={true}></audio>
             <h1>{socket && socket.id}</h1>
             {users && users.map(user => {
                 return (
                     <div key={user.id}>
                         <h2 key={user.id}>{user.name + '    '}{user.id}</h2>
-                        {/* 
-                            Correct way, but not working
-                            <audio src={user.stream} autoPlay={true}></audio> 
-                        */}
+                        {/* Correct way, but not working */}
+                        {/* <audio src={user.stream} autoPlay></audio> */}
+                        <p>{user.stream ? 'Speaking' : 'Not Speaking'}</p>
                     </div>
                 )
             })} 
