@@ -1,0 +1,15 @@
+.queue::-webkit-scrollbar-track
+{
+	background-color: transparent;
+}
+
+.queue::-webkit-scrollbar
+{
+	width: 7px;
+	background-color: transparent;
+}
+
+.queue::-webkit-scrollbar-thumb
+{
+	background-color: #149f98;
+}

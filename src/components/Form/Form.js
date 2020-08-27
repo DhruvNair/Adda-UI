@@ -25,8 +25,12 @@ const Form = () => {
                 position: "top-right",
                 duration: 3000,
                 render: (props) => (
-                    <Box m={3} p={6} onClick={props.onClose} color="white" p={3} bg="green.500">
-                        Room Created Successfully!
+                    <Box rounded={10} m={3} px={10} py={5} color="white" bg="green.500">
+                        <Flex position='absolute' top='25px' right='25px'><Icon onClick={props.onClose} size='12px' name='close'></Icon></Flex>
+                        <Box>
+                            <Text fontWeight='bold' fontFamily='primary'>Room Created Successfully!</Text>
+                            <Text fontSize='12px' fontFamily='primary'>Invite some friends over</Text>
+                        </Box>
                     </Box>
                 ),
             })
