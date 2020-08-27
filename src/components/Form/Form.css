@@ -1,0 +1,11 @@
+.slanted{
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 80%);
+    padding-bottom: 20%!important;
+}
+@media only screen and (min-width: 992px) {
+    .slanted{
+        padding-bottom: 20px!important;
+        padding-right: 10%;
+        clip-path: polygon(0 0, 100% 0, 80% 100%, 0 100%);
+    }
+}
