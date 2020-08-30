@@ -3,8 +3,8 @@ import { Flex, Box, Text } from '@chakra-ui/core';
 import FriendDetails from './FriendDetails';
 
 const FriendsComponent = (props) => {
-    let { selfUser, users } = props;
-    const selfDetails = useMemo(() => <FriendDetails editable user={selfUser}/>,[selfUser]);
+    let { selfUser, users, getAudio } = props;
+    const selfDetails = useMemo(() => <FriendDetails getAudio={getAudio} editable user={selfUser}/>,[selfUser]);
     return (
         <Flex h='100%' direction='column' bg='darkestColor' color='lightColor'>
             <Flex h='30%' align='center' pl='20px'>

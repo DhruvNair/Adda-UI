@@ -18,7 +18,6 @@ const Dashboard = () => {
     const [users, setUsers] = useState([]);
     const [selfUser, setSelfUser] = useState(null);
     const result = useParams();
-    const friendsComponent = useMemo(() => <FriendsComponent selfUser={selfUser} users={users}/>, [users, selfUser]);
 
     useEffect(() => {
         // It's hardcoded to brijesh
@@ -74,7 +73,7 @@ const Dashboard = () => {
                 user.stream = stream;
                 console.log("User: ", socketId, " played :", stream)
                 // This works (but not the correct way)
-                // document.querySelector('audio').srcObject = user.stream;
+                // document.querySelector('.audio').srcObject = user.stream;
                 return [...otherUsers, user]
             })
             await socket.request("resume", { consumerId: consumer.id, socketId, kind });
@@ -100,7 +99,6 @@ const Dashboard = () => {
     }, [result]);
 
     const getAudio = async () => {
-        console.log("Got Audio");
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
         const track = stream.getAudioTracks()[0];
 
@@ -112,6 +110,9 @@ const Dashboard = () => {
             return updated;
         })
     }
+
+    const friendsComponent = useMemo(() => <FriendsComponent getAudio={getAudio} selfUser={selfUser} users={users}/>, [users, selfUser]);
+
 
     const pauseProducer = async() => {
         console.log("Paused Producer");
@@ -172,6 +173,7 @@ const Dashboard = () => {
                     </Box>
                 </Flex>
             </Flex>
+            <audio className="audio" autoPlay></audio>
             <button disabled={!webrtc} onClick={getAudio}>Audio</button>
             <button disabled={!(selfUser && selfUser.producer && !selfUser.producer.paused)} onClick={pauseProducer}>Pause</button>
             <button disabled={!(selfUser && selfUser.producer && selfUser.producer.paused)} onClick={resumeProducer}>Resume</button>

@@ -3,8 +3,9 @@ import { Flex, Text, IconButton, Icon, Box } from '@chakra-ui/core';
 import { MdMic, MdMicOff } from 'react-icons/md'
 
 const FriendDetails = (props) => {
-    let {user, editable} = props;
+    let {user, editable, getAudio} = props;
     let audioIcon = editable ? (user && user.producer && !user.producer.paused ? MdMic : MdMicOff) : (user && user.stream ? MdMic : MdMicOff) ;
+    console.log(editable, user);
     if(user) {
         return(
             <Flex h='100%' w='100px' align='center' direction='column'>
@@ -12,7 +13,7 @@ const FriendDetails = (props) => {
                 <Flex w='60px' h='60px' borderRadius='100%' position='relative' bg='primaryColor' color='secondaryColor' align='center' justify='center'>
                     <Text as='span' fontFamily='secondary' fontSize='30px'>{user ? user.name[0] : '?'}</Text>
                     { editable ?
-                        <IconButton as='div' isRound size='xs' position='absolute' bottom='0' right='0' cursor='pointer' aria-label='Toggle microphone' variantColor='teal' variant='ghost' fontSize='18px' icon={audioIcon}/> :
+                        <IconButton onClick={getAudio} as='div' isRound size='xs' position='absolute' bottom='0' right='0' cursor='pointer' aria-label='Toggle microphone' variantColor='teal' variant='ghost' fontSize='18px' icon={audioIcon}/> :
                         <Box w='24px' h='24px' position='absolute' bottom='0' right='0'><Icon as={audioIcon} color='teal.500' fontSize='18px'/></Box>
                     }
                 </Flex>
