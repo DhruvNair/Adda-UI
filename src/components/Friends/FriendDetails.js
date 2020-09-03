@@ -5,11 +5,16 @@ import { MdMic, MdMicOff } from 'react-icons/md'
 const FriendDetails = (props) => {
     let {user, editable, getAudio} = props;
     let audioIcon = editable ? (user && user.producer && !user.producer.paused ? MdMic : MdMicOff) : (user && user.stream ? MdMic : MdMicOff) ;
-    console.log(editable, user);
+
+    const setSrcObject = (ref, stream) => {
+        console.log(ref, stream);
+        if (ref && stream) ref.srcObject = stream;
+    }
+
     if(user) {
         return(
             <Flex h='100%' w='100px' align='center' direction='column'>
-                {editable ? <audio src={user.stream} autoPlay></audio> : <></>}
+                {(user && (user.producer || user.consumer)) ? <audio ref={ref => setSrcObject(ref, user.stream)} src={user.stream} autoPlay></audio> : <></>}
                 <Flex w='60px' h='60px' borderRadius='100%' position='relative' bg='primaryColor' color='secondaryColor' align='center' justify='center'>
                     <Text as='span' fontFamily='secondary' fontSize='30px'>{user ? user.name[0] : '?'}</Text>
                     { editable ?

@@ -4,6 +4,7 @@ export class User {
     produceTransport = null;
     consumeTransport = null;
     producer = null;
+    stream = null;
 
 
     constructor(name, id) {

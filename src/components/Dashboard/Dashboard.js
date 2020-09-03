@@ -105,11 +105,7 @@ const Dashboard = () => {
 
         const producer = await webrtc.createProducer(track, selfUser.produceTransport);
         
-        setSelfUser(prev => {
-            const updated = { ...prev }
-            updated.producer = producer;
-            return updated;
-        })
+        setSelfUser(prev => ({ ...prev, producer, stream }))
     }
 
     const friendsComponent = useMemo(() => <FriendsComponent getAudio={getAudio} selfUser={selfUser} users={users}/>, [users, selfUser]);
@@ -183,7 +179,6 @@ const Dashboard = () => {
                     </Box>
                 </Flex>
             </Flex>
-            <audio className="audio" autoPlay></audio>
             <button disabled={!webrtc} onClick={getAudio}>Audio</button>
             <button disabled={!(selfUser && selfUser.producer && !selfUser.producer.paused)} onClick={pauseProducer}>Pause</button>
             <button disabled={!(selfUser && selfUser.producer && selfUser.producer.paused)} onClick={resumeProducer}>Resume</button>
