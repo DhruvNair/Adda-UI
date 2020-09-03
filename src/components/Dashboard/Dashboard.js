@@ -18,6 +18,7 @@ const Dashboard = () => {
     const [users, setUsers] = useState([]);
     const [selfUser, setSelfUser] = useState(null);
     const result = useParams();
+    const [songs, setSongs] = useState([]);
 
     useEffect(() => {
         // It's hardcoded to brijesh
@@ -153,6 +154,15 @@ const Dashboard = () => {
             console.log('lul error');
         }
     }
+
+    const removeFromQueue = (url) => {
+        setSongs(songs => songs.filter(song => song !== url))
+    }
+
+    const addToQueue = (url) => {
+        setSongs(songs => [...songs, url])
+    }
+
     return (
         <>
             <Flex w='100%' h={window.innerHeight}>
@@ -166,7 +176,7 @@ const Dashboard = () => {
                 </Flex>
                 <Flex direction='column' w='20%' h='100%'>
                     <Box h='40%' w='100%'>
-                        <NowPlaying/>
+                        <NowPlaying queue={songs} addToQueue={addToQueue} removeFromQueue={removeFromQueue} />
                     </Box>
                     <Box bg='blue.500' h='60%' w='100%'>
                         <Chat/>
