@@ -7,7 +7,6 @@ const FriendDetails = (props) => {
     let audioIcon = editable ? (user && user.producer && !user.producer.paused ? MdMic : MdMicOff) : (user && user.stream ? MdMic : MdMicOff) ;
 
     const setSrcObject = (ref, stream) => {
-        console.log(ref, stream);
         if (ref && stream) ref.srcObject = stream;
     }
 

@@ -19,6 +19,7 @@ const Dashboard = () => {
     const [selfUser, setSelfUser] = useState(null);
     const result = useParams();
     const [songs, setSongs] = useState([]);
+    const [messages, setMessages] = useState([]);
 
     useEffect(() => {
         // It's hardcoded to brijesh
@@ -72,9 +73,6 @@ const Dashboard = () => {
                 stream.addTrack(consumer.track);
     
                 user.stream = stream;
-                console.log("User: ", socketId, " played :", stream)
-                // This works (but not the correct way)
-                // document.querySelector('.audio').srcObject = user.stream;
                 return [...otherUsers, user]
             })
             await socket.request("resume", { consumerId: consumer.id, socketId, kind });
@@ -83,7 +81,6 @@ const Dashboard = () => {
         socket.on('consumerPause', (data) => {
             const { consumerId } = data;
             const consumerObj = users.find(user => user.consumer && user.consumer.id === consumerId);
-
             if (!consumerObj) return;
 
             consumerObj.pause();
@@ -97,6 +94,11 @@ const Dashboard = () => {
 
             consumerObj.resume();
         })
+
+        socket.on('messageRecv', ({ message, user }) => {
+            setMessages(prevMessages => [...prevMessages, { message, user, self: false }])
+        })
+
     }, [result]);
 
     const getAudio = async () => {
@@ -159,6 +161,11 @@ const Dashboard = () => {
         setSongs(songs => [...songs, url])
     }
 
+    const addMessage = (text) => {
+        setMessages(prevMessages => [...prevMessages, { message: text, user: selfUser.name, self: true }])
+        socket.request('messageSend', text)
+    }
+
     return (
         <>
             <Flex w='100%' h={window.innerHeight}>
@@ -175,7 +182,7 @@ const Dashboard = () => {
                         <NowPlaying queue={songs} addToQueue={addToQueue} removeFromQueue={removeFromQueue} />
                     </Box>
                     <Box bg='blue.500' h='60%' w='100%'>
-                        <Chat/>
+                        <Chat messages={messages} addMessage={addMessage}/>
                     </Box>
                 </Flex>
             </Flex>
