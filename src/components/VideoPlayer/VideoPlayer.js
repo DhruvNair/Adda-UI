@@ -1,20 +1,14 @@
 import React, { useState, useRef } from 'react';
-import { Box } from '@chakra-ui/core';
+import { Box, Stack, Image, Text } from '@chakra-ui/core';
 import ReactPlayer from 'react-player';
 import { findDOMNode } from 'react-dom';
 import screenfull from 'screenfull';
+import EmptyQueue from '../../assets/empty.svg';
 
 const VideoPlayer = (props) => {
     const playerRef = useRef();
-    const URLInputRef = useRef();
-    const [playing, setPlaying] = useState(false);
-    const [currTime, setCurrTime] = useState(0);
+    const {playing, currTime, URL, onPlay, onPause, onSeek} = props;
     const [pendingUpdate, setPendingUpdate] = useState(false);
-    const [URL, setURL] = useState('https://www.twitch.tv/videos/612977898');
-
-    const toggleVideo = () => {
-        setPlaying(!playing)
-    }
 
     const seek = () => {
         console.log(playerRef.current.getCurrentTime())
@@ -25,7 +19,7 @@ const VideoPlayer = (props) => {
         if (playing) {
           playerRef.current.seekTo(currTime, "seconds")
         } else {
-          setCurrTime(time)
+        //   setCurrTime(time)
           setPendingUpdate(true)
         }
     }
@@ -35,23 +29,16 @@ const VideoPlayer = (props) => {
         setPendingUpdate(false);
     }
 
-    const playHandler = () => {
-        if (pendingUpdate) {
-          syncTime()
-        }
-        setPlaying(true)
-    }
+    // const playHandler = () => {
+    //     if (pendingUpdate) {
+    //       syncTime()
+    //     }
+    //     setPlaying(true)
+    // }
 
-    const pauseHandler = () => {
-        setPlaying(false)
-    }
-
-    const showText = () => {
-        if (ReactPlayer.canPlay(URLInputRef.current.value)){
-          setURL(URLInputRef.current.value)
-        }
-        URLInputRef.current.value = '';
-    }
+    // const pauseHandler = () => {
+    //     setPlaying(false)
+    // }
 
     const goFullScreen = () => {
         if(playing){
@@ -61,8 +48,14 @@ const VideoPlayer = (props) => {
 
     return (
         <Box w='100%' h='100%' pos='relative'>
-            <Box onDoubleClick={goFullScreen} bg='transparent' pos='absolute' top='0' left='0' w='100%' h='100%'></Box>
-            <ReactPlayer width='100%' height='100%' onPlay={playHandler} onPause={pauseHandler} playing={playing} ref={playerRef} url={URL} />
+            <Box onDoubleClick={goFullScreen} bg='transparent' pos='absolute' top='0' left='0' w='100%' h='100%' zIndex='2'></Box>
+            <Box pos='absolute' top='0' left='0' w='100%' h='100%' zIndex='1'>
+                <ReactPlayer width='100%' height='100%' onPlay={onPlay} onPause={onPause} onSeek={onSeek} playing={playing} ref={playerRef} url={URL} />
+            </Box>
+            <Stack bg='#0b1c20' align='center' justify='center' w='100%' h='100%' spacing={8} pos='absolute' top='0' left='0' zIndex='0'>
+                <Image w='30%' src={EmptyQueue}></Image>
+                <Text color='lightColor' fontFamily='primary' fontSize='32px'>Add some videos to the queue to start watching!</Text>
+            </Stack>
             {/* <button onClick={toggleVideo}>Toggle</button>
             <button onClick={seek}>Seek</button><br/>
             <input type="text" ref={URLInputRef}/>

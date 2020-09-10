@@ -20,6 +20,18 @@ const Dashboard = () => {
     const result = useParams();
     const [songs, setSongs] = useState([]);
     const [messages, setMessages] = useState([]);
+    const [playing, setPlaying] = useState(false);
+    const [nowPlaying, setNowPlaying] = useState('');
+    const [currAt, setCurrAt] = useState(0);
+    const [isHost, setIsHost] = useState(true);
+
+    useEffect(() => {
+        if(songs[0]){
+            setNowPlaying(songs[0]);
+        } else {
+            setNowPlaying('');
+        }
+    }, [songs])
 
     useEffect(() => {
         // It's hardcoded to brijesh
@@ -109,10 +121,15 @@ const Dashboard = () => {
         
         setSelfUser(prev => ({ ...prev, producer, stream }))
     }
-
-    const friendsComponent = useMemo(() => <FriendsComponent getAudio={getAudio} selfUser={selfUser} users={users}/>, [users, selfUser]);
-
-
+    const onPlay = () => {
+        console.log('Play');
+    }
+    const onPause = () => {
+        console.log('Pause');
+    }
+    const onSeek = (time) => {
+        console.log('Seeked to ', time);
+    }
     const pauseProducer = async() => {
         console.log("Paused Producer");
         try {
@@ -166,12 +183,17 @@ const Dashboard = () => {
         socket.request('messageSend', text)
     }
 
+    const friendsComponent = useMemo(() => <FriendsComponent users={users} selfUser={selfUser} getAudio={getAudio}/>, [users, selfUser]);
+    const videoComponent = useMemo(() => <VideoPlayer URL={nowPlaying} playing={playing} currTime={currAt} isHost={isHost} onPlay={onPlay} onPause={onPause} onSeek={onSeek}/>, [nowPlaying, playing, currAt, isHost]);
+    const nowPlayingComponent = useMemo(() => <NowPlaying queue={songs} addToQueue={addToQueue} removeFromQueue={removeFromQueue} isHost={isHost} />, [songs, isHost]);
+    const messagesComponent = useMemo(() => <Chat messages={messages} addMessage={addMessage}/>, [messages]);
+
     return (
         <>
             <Flex w='100%' h={window.innerHeight}>
                 <Flex direction='column' w='80%' h='100%'>
                     <Box h='80%' w='100%'>
-                        <VideoPlayer/>
+                        {videoComponent}
                     </Box>
                     <Box h='20%' w='100%'>
                         {friendsComponent}
@@ -179,10 +201,10 @@ const Dashboard = () => {
                 </Flex>
                 <Flex direction='column' w='20%' h='100%'>
                     <Box h='40%' w='100%'>
-                        <NowPlaying queue={songs} addToQueue={addToQueue} removeFromQueue={removeFromQueue} />
+                        {nowPlayingComponent}
                     </Box>
                     <Box bg='blue.500' h='60%' w='100%'>
-                        <Chat messages={messages} addMessage={addMessage}/>
+                        {messagesComponent}
                     </Box>
                 </Flex>
             </Flex>

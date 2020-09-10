@@ -13,6 +13,10 @@ const Chat = ({ messages, addMessage }) => {
         setInput("");
     }
 
+    const handleKeyPress = (event) => {
+        if(event.key === 'Enter'){addElement()}
+    }
+
     return (
         <Flex w='100%' border='1px' borderColor='darkColor' h='100%' bg='darkestColor' color='lightColor' direction='column'>
             <Flex h='90%' direction='column'>
@@ -38,6 +42,7 @@ const Chat = ({ messages, addMessage }) => {
                         fontFamily='secondary'
                         borderRadius='50rem'
                         value={input}
+                        onKeyPress={handleKeyPress}
                         onChange={e => setInput(e.target.value)}
                     />
                     <InputRightElement h='100%' width='2.5rem'>

@@ -24,13 +24,3 @@ const FriendsComponent = (props) => {
 }
 
 export default FriendsComponent;
-// {users && users.map(user => {
-//     return (
-//         <div key={user.id}>
-//             <h2 key={user.id}>{user.name + '    '}{user.id}</h2>
-//             {/* Correct way, but not working */}
-//             {/* <audio src={user.stream} autoPlay></audio> */}
-//             <p>{user.stream ? 'Speaking' : 'Not Speaking'}</p>
-//         </div>
-//     )
-// })} 

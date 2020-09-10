@@ -1,15 +1,36 @@
 import React, { useState } from 'react';
-import { Flex, Text, Input, InputRightElement, InputGroup, IconButton, List, ListItem, ListIcon, Box } from '@chakra-ui/core';
+import { Flex, Text, Input, InputRightElement, InputGroup, IconButton, List, ListItem, ListIcon, Icon, Box, useToast } from '@chakra-ui/core';
 import { MdQueue, MdPlayCircleFilled, MdSubdirectoryArrowRight, MdCancel } from 'react-icons/md';
+import ReactPlayer from 'react-player';
 import './NowPlaying.css';
 const NowPlaying = (props) => {
+    const toast = useToast();
     const { queue, addToQueue, removeFromQueue } = props;
 
     const [url, setUrl] = useState("");
 
     const addElement = () => {
-        addToQueue(url);
+        if(ReactPlayer.canPlay(url)){
+            addToQueue(url);
+        } else {
+            toast({
+                position: "top-right",
+                duration: 3000,
+                render: (props) => (
+                    <Box rounded={10} m={3} mr={2} px={10} py={5} color="white" bg="red.500">
+                        <Flex position='absolute' top='25px' right='25px'><Icon onClick={props.onClose} size='12px' name='close'/></Flex>
+                        <Box>
+                            <Text fontWeight='bold' fontFamily='primary'>Sorry. We can't play this URL!</Text>
+                            <Text fontSize='12px' fontFamily='primary'>Please try something else</Text>
+                        </Box>
+                    </Box>
+                ),
+            })
+        }
         setUrl("");
+    }
+    const handleKeyPress = (event) => {
+        if(event.key === 'Enter'){addElement()}
     }
 
     return (
@@ -29,6 +50,7 @@ const NowPlaying = (props) => {
                         fontFamily='secondary'
                         borderRadius='50rem'
                         value={url}
+                        onKeyPress={handleKeyPress}
                         onChange={(e) => setUrl(e.target.value)}
                     />
                     <InputRightElement h='100%' width='2.5rem'>
@@ -45,7 +67,7 @@ const NowPlaying = (props) => {
                         <ListItem w='100%' display='flex'>
                             <Flex w='10%' align='center'><ListIcon icon={MdPlayCircleFilled} color='green.500' /></Flex>
                             <Box w='80%'><Text fontFamily='secondary' isTruncated w='100%'>{queue[0]}</Text></Box>
-                            <Flex w='10%' align='center'><ListIcon icon={MdCancel} color='red.500' cursor='pointer' /></Flex>
+                            <Flex onClick={() => removeFromQueue(queue[0])} w='10%' align='center'><ListIcon icon={MdCancel} color='red.500' cursor='pointer' /></Flex>
                         </ListItem>
                     )}
                     {queue.length > 1 && queue.map((ele, idx) => {
