@@ -59,6 +59,39 @@ const Dashboard = () => {
             const userList = await socket.request('getusers', null);
             const prevUsers = userList.map(each => new OtherUser(each.name, each.id));
             setUsers(prevUsers);
+
+
+            const existingProducers = await socket.request('getExistingAudioProducers', {});
+
+            const existingProducersPromise = existingProducers.map(async producer => {
+                const { id, kind } = producer;
+                const consumer = await webrtc.createConsumer(id, kind);
+                await socket.request("resume", { consumerId: consumer.id, socketId:id, kind });
+                return { id, consumer }
+            })
+
+            Promise.all(existingProducersPromise).then(values => {
+                const object = {}
+                values.forEach(({id, consumer}) => object[id] = consumer);
+
+                setUsers(prev => {
+                    const producingUsers = prev.filter(each => Object.keys(object).includes(each.id));
+                    const otherUsers = prev.filter(each => !Object.keys(object).includes(each.id))
+
+                    producingUsers.forEach(each => {
+                        each.consumer = object[each.id];
+
+                        let stream = new MediaStream();
+                        stream.addTrack(each.consumer.track);
+
+                        each.stream = stream;
+                    })
+
+                    return [...producingUsers, ...otherUsers];
+                })
+            })
+
+
         })
 
         socket.on('UserLeft', ({ id }) => {
@@ -113,6 +146,7 @@ const Dashboard = () => {
 
     }, [result]);
 
+
     const getAudio = async () => {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
         const track = stream.getAudioTracks()[0];
@@ -131,7 +165,6 @@ const Dashboard = () => {
         console.log('Seeked to ', time);
     }
     const pauseProducer = async() => {
-        console.log("Paused Producer");
         try {
             await socket.request('pauseProducer', { producerUserId: socket.id })
             setSelfUser(prev => {
@@ -151,7 +184,6 @@ const Dashboard = () => {
     }
 
     const resumeProducer = async() => {
-        console.log("Resumed Producer");
         try {
             await socket.request('resumeProducer', { producerUserId: socket.id })
             setSelfUser(prev => {
@@ -186,7 +218,7 @@ const Dashboard = () => {
     const friendsComponent = useMemo(() => <FriendsComponent users={users} selfUser={selfUser} getAudio={getAudio}/>, [users, selfUser]);
     const videoComponent = useMemo(() => <VideoPlayer URL={nowPlaying} playing={playing} currTime={currAt} isHost={isHost} onPlay={onPlay} onPause={onPause} onSeek={onSeek}/>, [nowPlaying, playing, currAt, isHost]);
     const nowPlayingComponent = useMemo(() => <NowPlaying queue={songs} addToQueue={addToQueue} removeFromQueue={removeFromQueue} isHost={isHost} />, [songs, isHost]);
-    const messagesComponent = useMemo(() => <Chat messages={messages} addMessage={addMessage}/>, [messages]);
+    const messagesComponent = useMemo(() => <Chat messages={messages} addMessage={addMessage}/>, [messages, selfUser]);
 
     return (
         <>
