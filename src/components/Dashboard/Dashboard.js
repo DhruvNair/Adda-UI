@@ -92,6 +92,10 @@ const Dashboard = () => {
             })
 
 
+            const songs = await socket.request('queueRecv', {});
+            console.log(songs, 'songs re')
+            setSongs(songs);
+
         })
 
         socket.on('UserLeft', ({ id }) => {
@@ -142,6 +146,10 @@ const Dashboard = () => {
 
         socket.on('messageRecv', ({ message, user }) => {
             setMessages(prevMessages => [...prevMessages, { message, user, self: false }])
+        })
+
+        socket.on('queueRecv', (songs) => {
+            setSongs(songs);
         })
 
     }, [result]);
@@ -207,7 +215,9 @@ const Dashboard = () => {
     }
 
     const addToQueue = (url) => {
-        setSongs(songs => [...songs, url])
+        let updatedSongs = [...songs, url];
+        setSongs(updatedSongs);
+        socket.request('queueSend', updatedSongs);
     }
 
     const addMessage = (text) => {
