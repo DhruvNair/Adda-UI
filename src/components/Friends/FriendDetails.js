@@ -4,7 +4,7 @@ import { MdMic, MdMicOff } from 'react-icons/md'
 
 const FriendDetails = (props) => {
     let {user, editable, getAudio} = props;
-    let audioIcon = editable ? (user && user.producer && !user.producer.paused ? MdMic : MdMicOff) : (user && user.stream ? MdMic : MdMicOff) ;
+    let audioIcon = editable ? (user && user.producer && !user.producer.paused ? MdMic : MdMicOff) : (user && user.consumer && !user.consumer.paused ? MdMic : MdMicOff) ;
 
     const setSrcObject = (ref, stream) => {
         if (ref && stream) ref.srcObject = stream;

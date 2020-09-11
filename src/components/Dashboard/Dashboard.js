@@ -122,26 +122,37 @@ const Dashboard = () => {
                 stream.addTrack(consumer.track);
     
                 user.stream = stream;
-                return [...otherUsers, user]
+                return [...otherUsers, user];
             })
             await socket.request("resume", { consumerId: consumer.id, socketId, kind });
         })
 
         socket.on('consumerPause', (data) => {
-            const { consumerId } = data;
-            const consumerObj = users.find(user => user.consumer && user.consumer.id === consumerId);
-            if (!consumerObj) return;
-
-            consumerObj.pause();
+            setUsers(allUsers => {
+                console.log(allUsers)                
+                const { producerId } = data;
+                console.log(producerId)
+                const otherUsers = allUsers.filter(each => !each.consumer || each.id !== producerId);
+                const user = allUsers.find(ele => ele.consumer && ele.consumer.id === producerId);
+                console.log("Consumer paused");
+                console.log(user)
+                if (!user) return allUsers;
+                user.consumer.pause();
+                return [...otherUsers, user];
+            })
         })
 
         socket.on('consumerResume', (data) => {
-            const { consumerId } = data;
-            const consumerObj = users.find(user => user.consumer && user.consumer.id === consumerId);
-
-            if (!consumerObj) return;
-
-            consumerObj.resume();
+            setUsers(allUsers => {
+                const { consumerId } = data;
+                const otherUsers = allUsers.filter(each => !each.consumer || each.id !== consumerId);
+                const user = allUsers.find(ele => ele.consumer && ele.id === consumerId);
+                console.log("Consumer resumed");
+                console.log(user)
+                if (!user) return allUsers;
+                user.consumer.resume();
+                return [...otherUsers, user];
+            })
         })
 
         socket.on('messageRecv', ({ message, user }) => {
@@ -153,6 +164,11 @@ const Dashboard = () => {
         })
 
     }, [result]);
+
+    useEffect(()=> {
+        console.log("users changed");
+        console.log(users);
+    },[users])
 
 
     const getAudio = async () => {
