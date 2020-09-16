@@ -4,7 +4,7 @@ import FriendDetails from './FriendDetails';
 
 const FriendsComponent = (props) => {
     let { selfUser, users, getAudio } = props;
-    const selfDetails = useMemo(() => <FriendDetails getAudio={getAudio} editable user={selfUser}/>,[selfUser]);
+    const selfDetails = useMemo(() => <FriendDetails getAudio={getAudio} editable user={selfUser}/>, [selfUser]);
     return (
         <Flex h='100%' direction='column' bg='darkestColor' color='lightColor'>
             <Flex h='30%' align='center' pl='20px'>

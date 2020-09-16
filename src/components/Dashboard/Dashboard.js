@@ -93,7 +93,6 @@ const Dashboard = () => {
 
 
             const songs = await socket.request('queueRecv', {});
-            console.log(songs, 'songs re')
             setSongs(songs);
 
         })
@@ -129,13 +128,9 @@ const Dashboard = () => {
 
         socket.on('consumerPause', (data) => {
             setUsers(allUsers => {
-                console.log(allUsers)                
                 const { producerId } = data;
-                console.log(producerId)
                 const otherUsers = allUsers.filter(each => !each.consumer || each.id !== producerId);
                 const user = allUsers.find(ele => ele.consumer && ele.consumer.id === producerId);
-                console.log("Consumer paused");
-                console.log(user)
                 if (!user) return allUsers;
                 user.consumer.pause();
                 return [...otherUsers, user];
@@ -147,8 +142,6 @@ const Dashboard = () => {
                 const { consumerId } = data;
                 const otherUsers = allUsers.filter(each => !each.consumer || each.id !== consumerId);
                 const user = allUsers.find(ele => ele.consumer && ele.id === consumerId);
-                console.log("Consumer resumed");
-                console.log(user)
                 if (!user) return allUsers;
                 user.consumer.resume();
                 return [...otherUsers, user];
@@ -167,17 +160,28 @@ const Dashboard = () => {
 
     useEffect(()=> {
         console.log("users changed");
-        console.log(users);
     },[users])
 
 
     const getAudio = async () => {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-        const track = stream.getAudioTracks()[0];
 
-        const producer = await webrtc.createProducer(track, selfUser.produceTransport);
-        
-        setSelfUser(prev => ({ ...prev, producer, stream }))
+        if (selfUser.producer) {
+            if (selfUser.producer.paused) {
+                resumeProducer();
+            } else {
+                pauseProducer();                
+            }
+        }
+        else {
+            // Creating new producer
+
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+            const track = stream.getAudioTracks()[0];
+    
+            const producer = await webrtc.createProducer(track, selfUser.produceTransport);
+            
+            setSelfUser(prev => ({ ...prev, producer, stream }))
+        }
     }
     const onPlay = () => {
         console.log('Play');
@@ -218,7 +222,7 @@ const Dashboard = () => {
 
                 const updated = { ...prev };
                 updated.producer = producer;
-
+                
                 return updated;
             })
         } catch(e) {
